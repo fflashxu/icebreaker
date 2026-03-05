@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Alex Zhang",
+    "title": "Senior Engineering Manager",
+    "company": "Acme Corp",
+    "role": "INTERVIEWER",
+    "signature": "Alex Zhang\nEngineering Manager | Acme Corp\nalex@acme.com",
+    "personalNote": "Hiring for backend team, love open source contributors",
+    "id": "1cc28c00-4de7-4d48-b881-3925c49cbd4e",
+    "createdAt": "2026-03-05T05:54:23.645Z",
+    "updatedAt": "2026-03-05T05:56:14.118Z"
+  },
+  {
+    "name": "Harry Xu",
+    "title": "HR Director",
+    "company": "Momenta",
+    "role": "HR",
+    "signature": "Harry Xu\nHR Director | Momenta\nharry.xu@momenta.ai | linkedin.com/in/harryxu",
+    "personalNote": "",
+    "id": "5acad0db-2efc-42f3-812e-1420bd1242df",
+    "createdAt": "2026-03-05T06:09:39.330Z",
+    "updatedAt": "2026-03-05T06:09:39.330Z"
+  }
+]
