@@ -1,11 +1,5 @@
 import OpenAI from 'openai';
-import { env } from '../../config/env';
 import { SenderProfile } from '../profiles/profiles.service';
-
-const openai = new OpenAI({
-  apiKey: env.DASHSCOPE_API_KEY,
-  baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-});
 
 type EmailStyle = 'PROFESSIONAL' | 'WARM' | 'CONCISE' | 'STORYTELLING';
 
@@ -16,6 +10,13 @@ const STYLE_DESCRIPTIONS: Record<EmailStyle, string> = {
   STORYTELLING: 'Open with a scene or story, narrative transition, open-ended close. Suitable for product/growth roles.',
 };
 
+function createClient(dashscopeKey: string): OpenAI {
+  return new OpenAI({
+    apiKey: dashscopeKey,
+    baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  });
+}
+
 export interface GenerateRequest {
   candidateText: string;
   profile: SenderProfile;
@@ -23,6 +24,7 @@ export interface GenerateRequest {
   targetLanguage: string;
   jobTitle?: string;
   count: 1 | 2 | 3;
+  dashscopeKey: string;
 }
 
 export interface GeneratedEmail {
@@ -32,7 +34,8 @@ export interface GeneratedEmail {
 }
 
 export async function generateEmails(req: GenerateRequest): Promise<GeneratedEmail[]> {
-  const { candidateText, profile, style, targetLanguage, jobTitle, count } = req;
+  const { candidateText, profile, style, targetLanguage, jobTitle, count, dashscopeKey } = req;
+  const openai = createClient(dashscopeKey);
 
   const systemPrompt = `You are an expert recruitment email writer. Generate highly personalized, authentic outreach emails.
 
@@ -101,8 +104,11 @@ Return JSON: {"emails": [{"subject": "...", "body": "..."}]}`;
 export async function translateEmail(
   subject: string,
   body: string,
-  targetLanguage: string
+  targetLanguage: string,
+  dashscopeKey: string
 ): Promise<{ subject: string; body: string }> {
+  const openai = createClient(dashscopeKey);
+
   const response = await openai.chat.completions.create({
     model: 'qwen-plus',
     messages: [

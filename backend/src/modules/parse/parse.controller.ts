@@ -3,7 +3,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { env } from '../../config/env';
-import { ValidationError } from '../../shared/errors';
+import { ValidationError, UnprocessableError } from '../../shared/errors';
+import { authenticate } from '../../middleware/authenticate';
 import OpenAI from 'openai';
 
 export const parseRouter = Router();
@@ -11,11 +12,6 @@ export const parseRouter = Router();
 const upload = multer({
   dest: env.UPLOAD_DIR,
   limits: { fileSize: 10 * 1024 * 1024 },
-});
-
-const openai = new OpenAI({
-  apiKey: env.DASHSCOPE_API_KEY,
-  baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
 });
 
 function cleanText(text: string): string {
@@ -28,7 +24,6 @@ function cleanText(text: string): string {
 }
 
 async function parsePdf(filePath: string): Promise<string> {
-  // Dynamic import to avoid issues with pdf-parse's test file detection
   const pdfParse = require('pdf-parse');
   const buffer = fs.readFileSync(filePath);
   const data = await pdfParse(buffer);
@@ -41,7 +36,12 @@ async function parseDocx(filePath: string): Promise<string> {
   return cleanText(result.value);
 }
 
-async function parseImage(filePath: string, mimeType: string): Promise<string> {
+async function parseImage(filePath: string, mimeType: string, dashscopeKey: string): Promise<string> {
+  const openai = new OpenAI({
+    apiKey: dashscopeKey,
+    baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  });
+
   const buffer = fs.readFileSync(filePath);
   const base64 = buffer.toString('base64');
   const dataUrl = `data:${mimeType};base64,${base64}`;
@@ -68,7 +68,7 @@ async function parseImage(filePath: string, mimeType: string): Promise<string> {
   return cleanText(response.choices[0]?.message?.content || '');
 }
 
-parseRouter.post('/', upload.single('file'), async (req: Request, res: Response, next: NextFunction) => {
+parseRouter.post('/', authenticate, upload.single('file'), async (req: Request, res: Response, next: NextFunction) => {
   const file = req.file;
   if (!file) {
     return next(new ValidationError('No file uploaded'));
@@ -88,13 +88,17 @@ parseRouter.post('/', upload.single('file'), async (req: Request, res: Response,
       text = await parseDocx(filePath);
       source = 'docx';
     } else if (['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
+      const dashscopeKey = req.user!.dashscopeKey;
+      if (!dashscopeKey) {
+        throw new UnprocessableError('请先在设置中添加 DashScope Key');
+      }
       const mimeMap: Record<string, string> = {
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
         '.png': 'image/png',
         '.webp': 'image/webp',
       };
-      text = await parseImage(filePath, mimeMap[ext]);
+      text = await parseImage(filePath, mimeMap[ext], dashscopeKey);
       source = 'image_ocr';
     } else {
       throw new ValidationError(`Unsupported file type: ${ext}. Supported: .pdf, .docx, .jpg, .png`);

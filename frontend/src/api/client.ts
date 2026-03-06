@@ -3,9 +3,30 @@ import { SenderProfile, GenerateRequest, GeneratedEmail, ParseResponse } from '.
 
 const api = axios.create({ baseURL: '/api' });
 
+// Attach JWT token on every request
+api.interceptors.request.use((config) => {
+  try {
+    const raw = localStorage.getItem('email-gen-auth');
+    if (raw) {
+      const state = JSON.parse(raw);
+      const token = state?.state?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('email-gen-auth');
+      window.location.href = '/login';
+    }
     const message = err.response?.data?.error || err.message || 'Request failed';
     return Promise.reject(new Error(message));
   }
@@ -37,4 +58,16 @@ export const generateAPI = {
     api.post<{ subject: string; body: string }>('/generate/translate', {
       subject, body, targetLanguage,
     }).then((r) => r.data),
+};
+
+export const authAPI = {
+  login: (email: string, password: string) =>
+    api.post<{ token: string; user: any }>('/auth/login', { email, password }).then((r) => r.data),
+  register: (name: string, email: string, password: string, token: string) =>
+    api.post<{ token: string; user: any }>(`/auth/register?token=${encodeURIComponent(token)}`, { name, email, password }).then((r) => r.data),
+  me: () => api.get<any>('/auth/me').then((r) => r.data),
+  updateDashscopeKey: (dashscopeKey: string) =>
+    api.put<any>('/auth/dashscope-key', { dashscopeKey }).then((r) => r.data),
+  createInviteToken: () => api.post<any>('/auth/invite-tokens').then((r) => r.data),
+  listInviteTokens: () => api.get<any[]>('/auth/invite-tokens').then((r) => r.data),
 };
