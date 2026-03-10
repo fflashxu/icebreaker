@@ -26,6 +26,12 @@
 
 它读懂候选人的简历，自动提炼出值得一提的具体细节 —— 某个亮眼项目、某段特别的经历 —— 然后帮你写出一封像是专门为这个人写的邮件。
 
+## 🌐 在线体验
+
+无需本地部署，直接访问：**[icebreaker.build](https://icebreaker.build)**
+
+> 使用在线版需要填入自己的 DashScope Key（在设置页配置，Key 仅存储在你自己的账号下）
+
 ---
 
 ## ✨ 真实场景，感受一下
@@ -180,14 +186,6 @@ icebreaker/
         │   └── email/        # 邮件卡片
         └── store/            # Zustand 状态
 ```
-
----
-
-## 🌐 在线体验
-
-无需本地部署，直接访问：**[icebreaker.build](https://icebreaker.build)**
-
-> 使用在线版需要填入自己的 DashScope Key（在设置页配置，Key 仅存储在你自己的账号下）
 
 ---
 
