@@ -47,25 +47,34 @@ export interface GeneratedEmail {
   body: string;
 }
 
-export async function generateEmails(req: GenerateRequest): Promise<GeneratedEmail[]> {
-  const { candidateText, profile, style, targetLanguage, jobTitle, count, dashscopeKey } = req;
-  const openai = createClient(dashscopeKey);
+const ANGLE_HINTS = [
+  'Lead with a specific achievement or project from their background.',
+  'Lead with a compelling question about their career growth.',
+  'Lead with a unique company culture or mission angle.',
+];
 
-  const systemPrompt = `You are an expert recruitment email writer. Generate highly personalized, authentic outreach emails.
+async function generateSingleEmail(
+  openai: OpenAI,
+  req: Omit<GenerateRequest, 'dashscopeKey' | 'count'>,
+  angleHint: string
+): Promise<GeneratedEmail> {
+  const { candidateText, profile, style, targetLanguage, jobTitle } = req;
+
+  const systemPrompt = `You are an expert recruitment email writer. Generate a highly personalized, authentic outreach email.
 
 Key principles:
 - Reference specific details from the candidate's background (skills, experience, projects, achievements)
 - Be value-oriented: what's in it for them, not just what you need
 - Avoid template-like phrasing ("I came across your profile", "I wanted to reach out")
-- Each email should feel like it was written specifically for this person
-- Keep emails under 300 words
+- The email should feel like it was written specifically for this person
+- Keep the email under 300 words
 - Use natural language that matches the sender's role and style
 - Write in the specified target language
 
 Return ONLY valid JSON in this exact format:
-{"emails": [{"subject": "...", "body": "..."}]}`;
+{"subject": "...", "body": "..."}`;
 
-  const userPrompt = `Generate ${count} recruitment email(s) with these details:
+  const userPrompt = `Generate 1 recruitment email with these details:
 
 SENDER:
 - Name: ${profile.name}
@@ -84,14 +93,15 @@ EMAIL STYLE: ${style} - ${STYLE_DESCRIPTIONS[style]}
 
 TARGET LANGUAGE: ${targetLanguage}
 
+ANGLE: ${angleHint}
+
 Requirements:
-- Each email must reference at least 2-3 specific details from the candidate's background
+- Reference at least 2-3 specific details from the candidate's background
 - Subject line should be intriguing but not clickbait
 - Do NOT use generic openers
 - Sign off with the sender's name and signature
-${count > 1 ? `- Each of the ${count} emails should have a distinct angle/hook` : ''}
 
-Return JSON: {"emails": [{"subject": "...", "body": "..."}]}`;
+Return JSON: {"subject": "...", "body": "..."}`;
 
   let response;
   try {
@@ -108,21 +118,30 @@ Return JSON: {"emails": [{"subject": "...", "body": "..."}]}`;
     handleOpenAIError(err);
   }
 
-  const content = response!.choices[0]?.message?.content || '{"emails":[]}';
+  const content = response!.choices[0]?.message?.content || '{}';
   let parsed: any;
   try {
     parsed = JSON.parse(content);
   } catch {
-    parsed = { emails: [] };
+    parsed = {};
   }
 
-  const emails: GeneratedEmail[] = (parsed.emails || []).map((e: any, i: number) => ({
-    id: `email-${Date.now()}-${i}`,
-    subject: e.subject || '',
-    body: e.body || '',
-  }));
+  return {
+    id: `email-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    subject: parsed.subject || '',
+    body: parsed.body || '',
+  };
+}
 
-  return emails;
+export async function generateEmails(req: GenerateRequest): Promise<GeneratedEmail[]> {
+  const { count, dashscopeKey, ...rest } = req;
+  const openai = createClient(dashscopeKey);
+
+  const tasks = Array.from({ length: count }, (_, i) =>
+    generateSingleEmail(openai, rest, ANGLE_HINTS[i] ?? ANGLE_HINTS[0])
+  );
+
+  return Promise.all(tasks);
 }
 
 export async function translateEmail(
