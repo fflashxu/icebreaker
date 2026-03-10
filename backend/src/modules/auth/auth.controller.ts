@@ -6,13 +6,11 @@ import * as authService from './auth.service';
 
 export const authRouter = Router();
 
-// POST /api/auth/register?token=
+// POST /api/auth/register
 authRouter.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const inviteToken = req.query.token as string;
-    if (!inviteToken) return next(new ForbiddenError('Invite token required'));
     const body = registerSchema.parse(req.body);
-    const result = await authService.register(body.name, body.email, body.password, inviteToken);
+    const result = await authService.register(body.name, body.email, body.password);
     res.status(201).json(result);
   } catch (e) {
     next(e);

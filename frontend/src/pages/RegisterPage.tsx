@@ -1,31 +1,25 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { authAPI } from '../api/client';
 import { useAuthStore } from '../store/auth';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [token] = useState(searchParams.get('token') || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!token) {
-      setError('Invite token is required. Use the invite link you received.');
-      return;
-    }
     setLoading(true);
     try {
-      const result = await authAPI.register(name, email, password, token);
+      const result = await authAPI.register(name, email, password);
       setAuth(result.token, result.user);
       navigate('/');
     } catch (err: any) {
@@ -48,12 +42,6 @@ export function RegisterPage() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h1 className="text-lg font-semibold text-gray-900 mb-5">Create account</h1>
-
-          {!token && (
-            <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-700">
-              No invite token found. Please use the invite link you received.
-            </div>
-          )}
 
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
@@ -96,18 +84,9 @@ export function RegisterPage() {
                 placeholder="Min. 8 characters"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Invite token</label>
-              <input
-                type="text"
-                value={token}
-                readOnly
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm bg-gray-50 text-gray-500"
-              />
-            </div>
             <button
               type="submit"
-              disabled={loading || !token}
+              disabled={loading}
               className="w-full py-2 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition-colors disabled:opacity-50"
             >
               {loading ? 'Creating account…' : 'Create account'}

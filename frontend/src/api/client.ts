@@ -67,8 +67,8 @@ export const adminAPI = {
 export const authAPI = {
   login: (email: string, password: string) =>
     api.post<{ token: string; user: any }>('/auth/login', { email, password }).then((r) => r.data),
-  register: (name: string, email: string, password: string, token: string) =>
-    api.post<{ token: string; user: any }>(`/auth/register?token=${encodeURIComponent(token)}`, { name, email, password }).then((r) => r.data),
+  register: (name: string, email: string, password: string) =>
+    api.post<{ token: string; user: any }>('/auth/register', { name, email, password }).then((r) => r.data),
   me: () => api.get<any>('/auth/me').then((r) => r.data),
   updateDashscopeKey: (dashscopeKey: string) =>
     api.put<any>('/auth/dashscope-key', { dashscopeKey }).then((r) => r.data),

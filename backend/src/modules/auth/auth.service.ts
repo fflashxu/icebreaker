@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../../lib/prisma';
 import { env } from '../../config/env';
-import { UnauthorizedError, ForbiddenError, NotFoundError } from '../../shared/errors';
+import { UnauthorizedError, NotFoundError } from '../../shared/errors';
 import { ValidationError } from '../../shared/errors';
 
 function signToken(user: { id: string; email: string; name: string; isAdmin: boolean; dashscopeKey: string | null }): string {
@@ -23,25 +23,14 @@ function signToken(user: { id: string; email: string; name: string; isAdmin: boo
 export async function register(
   name: string,
   email: string,
-  password: string,
-  inviteToken: string
+  password: string
 ): Promise<{ token: string; user: object }> {
-  const invite = await prisma.inviteToken.findUnique({ where: { token: inviteToken } });
-  if (!invite) throw new ForbiddenError('Invalid invite token');
-  if (invite.usedAt) throw new ForbiddenError('Invite token already used');
-  if (invite.expiresAt < new Date()) throw new ForbiddenError('Invite token expired');
-
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new ValidationError('Email already registered');
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
     data: { id: uuidv4(), name, email, passwordHash },
-  });
-
-  await prisma.inviteToken.update({
-    where: { token: inviteToken },
-    data: { usedAt: new Date() },
   });
 
   const token = signToken(user);
