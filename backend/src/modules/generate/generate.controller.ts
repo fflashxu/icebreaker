@@ -4,6 +4,7 @@ import { generateEmails, translateEmail } from './generate.service';
 import { getProfileById } from '../profiles/profiles.service';
 import { authenticate } from '../../middleware/authenticate';
 import { UnprocessableError } from '../../shared/errors';
+import { prisma } from '../../lib/prisma';
 
 export const generateRouter = Router();
 
@@ -27,6 +28,10 @@ generateRouter.post('/', async (req: Request, res: Response, next: NextFunction)
       jobTitle: body.jobTitle,
       count: body.count as 1 | 2 | 3,
       dashscopeKey,
+    });
+
+    await prisma.generationLog.create({
+      data: { userId: req.user!.id, count: emails.length },
     });
 
     res.json({ emails });

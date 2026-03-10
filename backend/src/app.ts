@@ -7,6 +7,7 @@ import { profilesRouter } from './modules/profiles/profiles.controller';
 import { parseRouter } from './modules/parse/parse.controller';
 import { generateRouter } from './modules/generate/generate.controller';
 import { authRouter } from './modules/auth/auth.controller';
+import { adminRouter } from './modules/admin/admin.controller';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(express.json({ limit: '5mb' }));
 app.get('/health', (_req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
 app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/profiles', profilesRouter);
 app.use('/api/parse', parseRouter);
 app.use('/api/generate', generateRouter);

@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Key, Copy, Plus, ArrowLeft, Check } from 'lucide-react';
-import { authAPI } from '../api/client';
+import { Key, Copy, Plus, ArrowLeft, Check, Users, BarChart2 } from 'lucide-react';
+import { authAPI, adminAPI } from '../api/client';
 import { useAuthStore } from '../store/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -21,6 +21,12 @@ export function SettingsPage() {
   const { data: invites, isLoading: loadingInvites } = useQuery({
     queryKey: ['invite-tokens'],
     queryFn: authAPI.listInviteTokens,
+    enabled: user?.isAdmin === true,
+  });
+
+  const { data: adminStats, isLoading: loadingStats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: adminAPI.getStats,
     enabled: user?.isAdmin === true,
   });
 
@@ -198,6 +204,88 @@ export function SettingsPage() {
               </div>
             ) : (
               <p className="text-sm text-gray-400">No invite tokens yet.</p>
+            )}
+          </div>
+        )}
+
+        {/* Admin: User Generation Stats */}
+        {user?.isAdmin && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="w-4 h-4 text-sky-600" />
+              <h2 className="text-base font-medium text-gray-900">User Generation Stats</h2>
+              {adminStats && (
+                <span className="ml-auto text-xs text-gray-400">
+                  {adminStats.totalUsers} users · {adminStats.totalGenerations} total emails
+                </span>
+              )}
+            </div>
+            {loadingStats ? (
+              <p className="text-sm text-gray-400">Loading…</p>
+            ) : adminStats && adminStats.users.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                      <th className="pb-2 font-medium">Name</th>
+                      <th className="pb-2 font-medium">Email</th>
+                      <th className="pb-2 font-medium">Joined</th>
+                      <th className="pb-2 font-medium text-right">Emails generated</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {adminStats.users.map((u) => (
+                      <tr key={u.id} className="text-gray-700">
+                        <td className="py-2 pr-4 font-medium">{u.name}</td>
+                        <td className="py-2 pr-4 text-gray-500 text-xs">{u.email}</td>
+                        <td className="py-2 pr-4 text-gray-400 text-xs whitespace-nowrap">
+                          {new Date(u.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-2 text-right">
+                          <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold">
+                            {u.generationCount}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">No data yet.</p>
+            )}
+          </div>
+        )}
+
+        {/* Admin: Daily Registration Trend */}
+        {user?.isAdmin && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart2 className="w-4 h-4 text-sky-600" />
+              <h2 className="text-base font-medium text-gray-900">User Growth (Last 30 Days)</h2>
+            </div>
+            {loadingStats ? (
+              <p className="text-sm text-gray-400">Loading…</p>
+            ) : adminStats && adminStats.dailyRegistrations.length > 0 ? (
+              <div className="space-y-1.5">
+                {(() => {
+                  const max = Math.max(...adminStats.dailyRegistrations.map((d) => d.count), 1);
+                  return adminStats.dailyRegistrations.map((d) => (
+                    <div key={d.date} className="flex items-center gap-3 text-sm">
+                      <span className="text-xs text-gray-400 w-24 shrink-0">{d.date}</span>
+                      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-sky-400 h-2 rounded-full transition-all"
+                          style={{ width: `${(d.count / max) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-600 w-6 text-right shrink-0">{d.count}</span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">No registrations in the last 30 days.</p>
             )}
           </div>
         )}

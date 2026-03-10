@@ -33,3 +33,18 @@ export interface ParseResponse {
   source: string;
   charCount: number;
 }
+
+export interface AdminUserStat {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  generationCount: number;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalGenerations: number;
+  users: AdminUserStat[];
+  dailyRegistrations: { date: string; count: number }[];
+}

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SenderProfile, GenerateRequest, GeneratedEmail, ParseResponse } from '../types';
+import { SenderProfile, GenerateRequest, GeneratedEmail, ParseResponse, AdminStats } from '../types';
 
 const api = axios.create({ baseURL: '/api' });
 
@@ -58,6 +58,10 @@ export const generateAPI = {
     api.post<{ subject: string; body: string }>('/generate/translate', {
       subject, body, targetLanguage,
     }).then((r) => r.data),
+};
+
+export const adminAPI = {
+  getStats: () => api.get<AdminStats>('/admin/stats').then((r) => r.data),
 };
 
 export const authAPI = {

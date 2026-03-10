@@ -16,14 +16,15 @@ enum ProfileRole {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  name         String
-  passwordHash String    @map("password_hash")
-  dashscopeKey String?   @map("dashscope_key")
-  isAdmin      Boolean   @default(false) @map("is_admin")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  profiles     Profile[]
+  id              String          @id @default(uuid())
+  email           String          @unique
+  name            String
+  passwordHash    String          @map("password_hash")
+  dashscopeKey    String?         @map("dashscope_key")
+  isAdmin         Boolean         @default(false) @map("is_admin")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  profiles        Profile[]
+  generationLogs  GenerationLog[]
 }
 
 model Profile {
@@ -46,4 +47,14 @@ model InviteToken {
   usedAt    DateTime? @map("used_at")
   expiresAt DateTime  @map("expires_at")
   createdAt DateTime  @default(now()) @map("created_at")
+}
+
+model GenerationLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  count     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("generation_logs")
 }
