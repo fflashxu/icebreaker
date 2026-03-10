@@ -4,59 +4,90 @@
 
 **AI 招聘邮件生成器 — 让候选人感受到被认真对待**
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-icebreaker.build-blue?style=for-the-badge)](https://icebreaker.build)
+*AI-powered recruiting email writer that feels personal, not templated*
+
+[![Live Demo](https://img.shields.io/badge/🌐_在线体验-icebreaker.build-blue?style=for-the-badge)](https://icebreaker.build)
+[![GitHub Stars](https://img.shields.io/github/stars/hxu911-bot/icebreaker?style=for-the-badge&logo=github&color=gold)](https://github.com/hxu911-bot/icebreaker/stargazers)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![Node](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 
----
-
-*3 步生成一封让候选人眼前一亮的个性化招聘邮件*
+**适合：招聘 HR · 猎头 · 内推人 · 需要批量个性化触达的 Founder**
 
 </div>
 
 ---
 
-## 😩 你是否也有这样的困扰？
+## 😩 你有没有遇到过这种情况
 
-> 每天要联系几十个候选人，却不得不一遍遍发着同样的模板邮件……
-> 候选人一眼看出这是群发，回复率低得可怜。
-> 想写有温度的邮件，但哪有时间逐一研究每份简历？
+每天要联系几十个候选人，却不得不一遍遍发着同样的模板邮件。
+候选人一眼看出这是群发，回复率低得可怜。
+想写有温度的邮件，但哪有时间逐一研究每份简历？
 
-**Icebreaker 就是为解决这个问题而生的。**
+**对比一下，感受很直观——**
 
-它读懂候选人的简历，自动提炼出值得一提的具体细节 —— 某个亮眼项目、某段特别的经历 —— 然后帮你写出一封像是专门为这个人写的邮件。
+<table>
+<tr>
+<td width="50%" align="center">
 
-## 🌐 在线体验
+❌ **普通模板邮件**
 
-无需本地部署，直接访问：**[icebreaker.build](https://icebreaker.build)**
+</td>
+<td width="50%" align="center">
 
-> 使用在线版需要填入自己的 DashScope Key（在设置页配置，Key 仅存储在你自己的账号下）
+✅ **Icebreaker 生成的邮件**
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+> 您好，我司正在招聘高级工程师岗位，薪资极具竞争力，欢迎了解详情，期待您的回复。
+
+</td>
+<td width="50%">
+
+> *"看到你在字节做的分布式缓存那个项目，把 P99 延迟从 80ms 压到 12ms，我直接把这个发给了我们的 CTO。他让我第一时间联系你……"*
+
+</td>
+</tr>
+</table>
+
+同样一个候选人，哪封邮件你会回？
+
+**Icebreaker 读懂候选人的简历，自动提炼具体细节，帮你写出一封像是专门为这个人写的邮件。**
 
 ---
 
-## ✨ 真实场景，感受一下
+## 🌐 立即体验
+
+无需部署，直接访问：**[icebreaker.build](https://icebreaker.build)**
+
+> 需要填入自己的 DashScope Key（免费注册即有额度，Key 仅存在你自己的账号下，不经过我们服务器）
+
+---
+
+## ✨ 真实场景
 
 <table>
 <tr>
 <td width="50%">
 
-**场景一：技术 HR 联系资深工程师**
+**技术 HR 联系资深工程师**
 
 候选人背景：
 > 前字节跳动基础架构工程师，主导过日均百亿请求的分布式缓存优化，开源项目 2k star
 
-Icebreaker 生成的邮件开头：
+生成邮件开头：
 > *"看到你在字节做的分布式缓存那个项目，把 P99 延迟从 80ms 压到 12ms，我直接把这个发给了我们的 CTO。他让我第一时间联系你……"*
 
 </td>
 <td width="50%">
 
-**场景二：内推人联系前同事**
+**内推人联系前同事**
 
 候选人背景：
 > 前同事，在上家公司一起做过增长，后来去了 Shopee 做 SEA 市场
 
-Icebreaker 生成的邮件开头：
+生成邮件开头：
 > *"你在 Shopee 负责 SEA 这段经历让我想到了我们现在正在推的东南亚业务……说实话我第一反应就是想到你，因为你在那边两年踩过的坑，正是我们现在最需要的……"*
 
 </td>
@@ -64,23 +95,23 @@ Icebreaker 生成的邮件开头：
 <tr>
 <td width="50%">
 
-**场景三：猎头联系被动候选人**
+**猎头联系被动候选人**
 
 候选人背景：
 > 连续创业者，两次创业经历，擅长 0→1，目前在某独角兽任职
 
-Icebreaker 生成的邮件开头：
+生成邮件开头：
 > *"你有两次从零做到一的经历，这在职业经理人里很少见。我们 CEO 本人也是连续创业者，他说他不要'管理者'，他要'建造者'。你是后者……"*
 
 </td>
 <td width="50%">
 
-**场景四：跨语言联系海外候选人**
+**跨语言联系海外候选人**
 
 候选人背景：
 > 在日本工作的华人工程师，有 AI 相关论文发表
 
-Icebreaker 生成的邮件开头（日语）：
+生成邮件开头（日语）：
 > *「先日、先生の自然言語処理に関する論文を拝読いたしました。特に第三章のアテンション機構の改善手法は、私どもが直面している課題と完全に一致しており……」*
 
 </td>
@@ -123,23 +154,24 @@ Icebreaker 生成的邮件开头（日语）：
 
 ---
 
-## 🛠 快速开始
+## 🛠 本地部署
 
 ### 前置条件
 
 - Node.js 18+
+- PostgreSQL
 - [DashScope API Key](https://dashscope.console.aliyun.com/)（新用户有免费额度）
 
-### 一键启动
+### 启动
 
 ```bash
 # 1. 克隆项目
 git clone https://github.com/hxu911-bot/icebreaker.git
 cd icebreaker
 
-# 2. 配置 API Key
+# 2. 配置环境变量
 cp backend/.env.example backend/.env
-# 编辑 backend/.env，填入 DASHSCOPE_API_KEY=sk-xxxxx
+# 编辑 backend/.env，填入 DATABASE_URL 和 DASHSCOPE_API_KEY
 
 # 3. 启动后端（终端 1）
 cd backend && npm install && npm run dev   # → http://localhost:3100
@@ -176,7 +208,8 @@ icebreaker/
 │       │   ├── auth/         # 用户认证（JWT + 邀请码）
 │       │   ├── profiles/     # 发件人 Profile 管理
 │       │   ├── parse/        # 文件解析（PDF / DOCX / OCR）
-│       │   └── generate/     # AI 邮件生成 & 翻译
+│       │   ├── generate/     # AI 邮件生成 & 翻译
+│       │   └── admin/        # 管理员统计
 │       └── middleware/       # 认证 & 错误处理
 └── frontend/
     └── src/
@@ -191,6 +224,8 @@ icebreaker/
 
 <div align="center">
 
-**如果对你有帮助，欢迎 Star ⭐**
+觉得有用的话，点个 Star ⭐ 是对我最大的鼓励
+
+[![Star History Chart](https://api.star-history.com/svg?repos=hxu911-bot/icebreaker&type=Date)](https://star-history.com/#hxu911-bot/icebreaker&Date)
 
 </div>
