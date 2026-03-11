@@ -16,6 +16,16 @@
 
 ---
 
+<div align="center">
+
+[![Demo Video](https://img.youtube.com/vi/zP75B1kEndA/maxresdefault.jpg)](https://youtu.be/zP75B1kEndA)
+
+*▶ Watch the 60-second demo*
+
+</div>
+
+---
+
 ## 😩 The Problem with Template Emails
 
 You're reaching out to dozens of candidates every day — but you're sending the same copy-pasted template to all of them. Candidates see right through it. Reply rates are dismal. You want to write something personal, but who has time to research every single resume?
