@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Key, Copy, Plus, ArrowLeft, Check, Users, BarChart2 } from 'lucide-react';
+import { Key, Copy, Plus, ArrowLeft, Check, Users, BarChart2, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { authAPI, adminAPI } from '../api/client';
 import { useAuthStore } from '../store/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -14,6 +14,7 @@ export function SettingsPage() {
   const [keyError, setKeyError] = useState('');
   const [keySuccess, setKeySuccess] = useState(false);
   const [savingKey, setSavingKey] = useState(false);
+  const [showGuide, setShowGuide] = useState(!user?.dashscopeKey);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [newInviteUrl, setNewInviteUrl] = useState<string | null>(null);
   const [newInviteCopied, setNewInviteCopied] = useState(false);
@@ -85,10 +86,84 @@ export function SettingsPage() {
             <Key className="w-4 h-4 text-sky-600" />
             <h2 className="text-base font-medium text-gray-900">DashScope API Key</h2>
           </div>
-          <p className="text-sm text-gray-500 mb-4">
-            Required to generate emails. Get your key at{' '}
-            <span className="text-sky-600">dashscope.aliyuncs.com</span>.
+          <p className="text-sm text-gray-500 mb-3">
+            用于 AI 生成邮件（Qwen 模型）。{' '}
+            <a
+              href="https://dashscope.console.aliyun.com/apiKey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sky-600 hover:text-sky-700 hover:underline"
+            >
+              前往 DashScope 控制台
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </p>
+
+          {/* Step-by-step guide */}
+          <button
+            type="button"
+            onClick={() => setShowGuide((v) => !v)}
+            className="flex items-center gap-1.5 text-xs text-sky-600 hover:text-sky-700 mb-3 font-medium"
+          >
+            {showGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {showGuide ? '收起申请指南' : '查看 API Key 申请指南'}
+          </button>
+
+          {showGuide && (
+            <div className="mb-4 rounded-lg border border-sky-100 bg-sky-50 p-4 space-y-3">
+              <p className="text-xs font-semibold text-sky-800 uppercase tracking-wide">申请步骤</p>
+              <ol className="space-y-2.5">
+                {[
+                  {
+                    step: 1,
+                    text: '注册 / 登录阿里云账号',
+                    link: { label: '前往注册', href: 'https://account.aliyun.com/register/register.htm' },
+                  },
+                  {
+                    step: 2,
+                    text: '开通灵积模型服务（DashScope）',
+                    link: { label: '立即开通', href: 'https://dashscope.console.aliyun.com/' },
+                    note: '首次进入需点击「开通服务」，免费额度开箱即用',
+                  },
+                  {
+                    step: 3,
+                    text: '进入 API-KEY 管理页面',
+                    link: { label: '打开页面', href: 'https://dashscope.console.aliyun.com/apiKey' },
+                  },
+                  {
+                    step: 4,
+                    text: '点击「创建新的 API-KEY」，复制生成的 Key',
+                    note: 'Key 以 sk- 开头，仅显示一次，请妥善保存',
+                  },
+                  {
+                    step: 5,
+                    text: '将 Key 粘贴到下方输入框，点击保存即可',
+                  },
+                ].map(({ step, text, link, note }) => (
+                  <li key={step} className="flex gap-3 text-sm">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-sky-500 text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                      {step}
+                    </span>
+                    <div>
+                      <span className="text-gray-700">{text}</span>
+                      {link && (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 inline-flex items-center gap-0.5 text-sky-600 hover:text-sky-700 hover:underline text-xs font-medium"
+                        >
+                          {link.label}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      {note && <p className="mt-0.5 text-xs text-gray-400">{note}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
 
           {keyError && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
