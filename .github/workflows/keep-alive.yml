@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Ping health endpoint
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://icebreaker.build/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://icebreaker.build/health || echo "000")
           echo "Health check status: $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "Warning: health check returned $STATUS"
