@@ -4,9 +4,10 @@ import { parseAPI } from '../../api/client';
 
 interface Props {
   onParsed: (text: string) => void;
+  onClear?: () => void;
 }
 
-export function FileDropzone({ onParsed }: Props) {
+export function FileDropzone({ onParsed, onClear }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +44,7 @@ export function FileDropzone({ onParsed }: Props) {
   function clear() {
     setFileName(null);
     setError(null);
+    onClear?.();
     if (inputRef.current) inputRef.current.value = '';
   }
 

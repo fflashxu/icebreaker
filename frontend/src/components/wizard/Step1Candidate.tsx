@@ -48,19 +48,25 @@ export function Step1Candidate() {
       <div className="card p-6 space-y-4">
         {tab === 'file' && (
           <div className="space-y-4">
-            <FileDropzone onParsed={(text) => { setCandidateText(text); }} />
-            {candidateText && (
-              <div>
-                <label className="label">Parsed Text (editable)</label>
-                <textarea
-                  value={candidateText}
-                  onChange={(e) => setCandidateText(e.target.value)}
-                  rows={8}
-                  className="input resize-none text-xs font-mono"
-                  placeholder="Parsed candidate text will appear here..."
-                />
-              </div>
-            )}
+            <FileDropzone
+              onParsed={(text) => { setCandidateText(text); }}
+              onClear={() => setCandidateText('')}
+            />
+            <div>
+              <label className="label">Parsed Text (editable)</label>
+              <textarea
+                value={candidateText}
+                onChange={(e) => setCandidateText(e.target.value)}
+                rows={8}
+                className="input resize-none text-xs font-mono"
+                placeholder="Parsed candidate text will appear here. If empty, paste info manually or switch to Paste Text tab..."
+              />
+              {candidateText.length > 0 && candidateText.trim().length < 10 && (
+                <p className="text-xs text-amber-600 mt-1">
+                  ⚠️ Parsed text is too short ({candidateText.trim().length} chars, minimum 10). Please add more details.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
