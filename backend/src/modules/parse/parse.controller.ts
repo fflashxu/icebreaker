@@ -5,7 +5,7 @@ import fs from 'fs';
 import { env } from '../../config/env';
 import { ValidationError, UnprocessableError } from '../../shared/errors';
 import { authenticate } from '../../middleware/authenticate';
-import OpenAI from 'openai';
+import OpenAI, { APIError } from 'openai';
 import { PDFParse } from 'pdf-parse';
 
 export const parseRouter = Router();
@@ -28,6 +28,21 @@ const TEXT_MIN_CHARS = 50;
 const OCR_MAX_PAGES = 3;
 
 /**
+ * Extract a user-friendly error message from an OpenAI/DashScope API error.
+ */
+function extractApiError(e: unknown): string {
+  if (e instanceof APIError) {
+    const detail = (e as any).error?.message || e.message;
+    if (e.status === 401) {
+      return `DashScope API key is invalid or expired. Please update it in Settings. (${detail})`;
+    }
+    return `DashScope API error: ${detail}`;
+  }
+  if (e instanceof Error) return e.message;
+  return String(e);
+}
+
+/**
  * Parse PDF with text extraction first, then OCR fallback for scanned/image-based PDFs.
  */
 async function parsePdf(filePath: string, dashscopeKey?: string): Promise<{ text: string; source: string }> {
@@ -48,7 +63,8 @@ async function parsePdf(filePath: string, dashscopeKey?: string): Promise<{ text
         return { text: cleanText(ocrText), source: 'pdf_ocr' };
       }
     } catch (e) {
-      console.error('PDF OCR fallback failed:', e);
+      // Surface the real error for OCR failures (key invalid, quota, etc.)
+      throw new UnprocessableError(extractApiError(e));
     }
   }
 
@@ -62,7 +78,6 @@ async function ocrPdfPages(filePath: string, dashscopeKey: string, maxPages = OC
   const buffer = fs.readFileSync(filePath);
   const parser = new PDFParse({ data: new Uint8Array(buffer) });
 
-  // First get total page count
   const info = await parser.getInfo({ parsePageInfo: true });
   const pageCount = Math.min(maxPages, info.total);
 
@@ -71,18 +86,26 @@ async function ocrPdfPages(filePath: string, dashscopeKey: string, maxPages = OC
     scale: 2.0,
   });
 
+  const errors: string[] = [];
   const texts = await Promise.all(
     screenshotResult.pages.map(async (screenshot) => {
       try {
         return await ocrImageBase64(screenshot.dataUrl, dashscopeKey);
       } catch (e) {
-        console.error(`OCR failed for page ${screenshot.pageNumber}:`, e);
+        const msg = extractApiError(e);
+        console.error(`OCR failed for page ${screenshot.pageNumber}:`, msg);
+        errors.push(msg);
         return '';
       }
     })
   );
 
-  return texts.filter(Boolean).join('\n\n');
+  const combined = texts.filter(Boolean).join('\n\n');
+  // If all pages failed OCR, surface the error
+  if (!combined && errors.length > 0) {
+    throw new UnprocessableError(errors[0]);
+  }
+  return combined;
 }
 
 /**
@@ -168,6 +191,10 @@ parseRouter.post('/', authenticate, upload.single('file'), async (req: Request, 
 
     res.json({ text, source, charCount: text.length });
   } catch (e) {
+    // Convert raw API errors (DashScope 401 etc.) to readable errors
+    if (e instanceof APIError) {
+      return next(new UnprocessableError(extractApiError(e)));
+    }
     next(e);
   } finally {
     fs.unlink(filePath, () => {});
