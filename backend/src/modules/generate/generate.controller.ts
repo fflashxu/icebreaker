@@ -120,13 +120,13 @@ generateRouter.post('/translate', async (req: Request, res: Response, next: Next
     if (firstKey) {
       apiKey = firstKey.apiKey;
       baseUrl = firstKey.baseUrl || 'https://api.openai.com/v1';
-      model = body.model || firstKey.model || 'gpt-4o';
+      model = firstKey.model || 'gpt-4o';
     } else if (req.user!.dashscopeKey) {
       apiKey = req.user!.dashscopeKey;
       baseUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
       model = 'qwen-plus';
     } else {
-      return next(new UnprocessableError('请先在设置中添加 API Key'));
+      return next(new UnprocessableError('Please add an API Key in Settings.'));
     }
 
     const result = await translateEmail(body.subject, body.body, body.targetLanguage, apiKey, baseUrl, model);
