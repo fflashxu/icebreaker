@@ -1,0 +1,17 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" | tee /tmp/render_response.json
+          echo ""
+          DEPLOY_ID=$(cat /tmp/render_response.json | python3 -c "import sys,json; print(json.load(sys.stdin).get('deploy',{}).get('id','n/a'))" 2>/dev/null || echo "n/a")
+          echo "Deploy ID: $DEPLOY_ID"
