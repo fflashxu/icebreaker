@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProfileRole {
+  HR
+  INTERVIEWER
+  EXECUTIVE
+  REFERRAL
+  CUSTOM
+}
+
+model User {
+  id              String          @id @default(uuid())
+  email           String          @unique
+  name            String
+  passwordHash    String          @map("password_hash")
+  dashscopeKey    String?         @map("dashscope_key")
+  isAdmin         Boolean         @default(false) @map("is_admin")
+  freeQuota       Int             @default(0) @map("free_quota")   // remaining free generations
+  createdAt       DateTime        @default(now()) @map("created_at")
+  profiles        Profile[]
+  generationLogs  GenerationLog[]
+  apiKeys         ApiKey[]
+}
+
+model Profile {
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  title        String
+  company      String
+  role         ProfileRole
+  signature    String
+  personalNote String?     @map("personal_note")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+}
+
+model InviteToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  usedAt    DateTime? @map("used_at")
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+}
+
+model GenerationLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  count     Int
+  style     String?
+  provider  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("generation_logs")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  provider  String   // "deepseek", "dashscope", "openai"
+  label     String   // user-visible name
+  apiKey    String   @map("api_key")
+  baseUrl   String?  @map("base_url")
+  model     String?  // default model for this provider
+  isActive  Boolean  @default(true) @map("is_active")
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}

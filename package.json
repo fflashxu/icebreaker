@@ -1,0 +1,11 @@
+{
+  "name": "icebreaker",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm run build:frontend && npm run build:backend && npm run copy:frontend",
+    "build:frontend": "cd frontend && npm install --include=dev && npm run build",
+    "build:backend": "cd backend && npm install --include=dev && npx prisma generate && npm run build",
+    "copy:frontend": "cp -r frontend/dist backend/public",
+    "start": "cd backend && npx prisma migrate deploy && node dist/index.js"
+  }
+}

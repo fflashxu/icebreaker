@@ -1,0 +1,100 @@
+import axios from 'axios';
+import { SenderProfile, GenerateRequest, GeneratedEmail, ParseResponse, AdminStats } from '../types';
+
+const api = axios.create({ baseURL: '/api' });
+
+// Attach JWT token on every request
+api.interceptors.request.use((config) => {
+  try {
+    const raw = localStorage.getItem('icebreaker-auth');
+    if (raw) {
+      const state = JSON.parse(raw);
+      const token = state?.state?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('icebreaker-auth');
+      window.location.href = '/login';
+    }
+    const message = err.response?.data?.error || err.message || 'Request failed';
+    return Promise.reject(new Error(message));
+  }
+);
+
+export const profilesAPI = {
+  list: () => api.get<SenderProfile[]>('/profiles').then((r) => r.data),
+  create: (data: Omit<SenderProfile, 'id' | 'createdAt' | 'updatedAt'>) =>
+    api.post<SenderProfile>('/profiles', data).then((r) => r.data),
+  update: (id: string, data: Partial<Omit<SenderProfile, 'id' | 'createdAt' | 'updatedAt'>>) =>
+    api.put<SenderProfile>(`/profiles/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/profiles/${id}`),
+};
+
+export const parseAPI = {
+  uploadFile: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<ParseResponse>('/parse', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data);
+  },
+  uploadCsv: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<{ candidates: Array<{ name?: string; email?: string; rawText: string; source: string }>; count: number }>(
+      '/parse-csv', formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    ).then((r) => r.data);
+  },
+  parseUrls: (urls: string[]) =>
+    api.post<{ candidates: Array<{ url: string; ok: boolean; candidate?: { name: string; email?: string; rawText: string; source: string }; error?: string | null }> }>(
+      '/parse/urls', { urls }
+    ).then((r) => r.data),
+};
+
+export const generateAPI = {
+  generate: (req: GenerateRequest) =>
+    api.post<{ emails: GeneratedEmail[] }>('/generate', req).then((r) => r.data),
+  translate: (subject: string, body: string, targetLanguage: string) =>
+    api.post<{ subject: string; body: string }>('/generate/translate', {
+      subject, body, targetLanguage,
+    }).then((r) => r.data),
+  getStyleStats: () =>
+    api.get<Record<string, number>>('/generate/style-stats').then((r) => r.data),
+};
+
+export const adminAPI = {
+  getStats: () => api.get<AdminStats>('/admin/stats').then((r) => r.data),
+};
+
+export const keysAPI = {
+  list: () => api.get<{ keys: Array<{ id: string; provider: string; label: string; apiKey: string; model?: string; isActive: boolean; isDefault: boolean }>; providers: Record<string, { name: string; models: string[] }>; defaultKey?: { id: string; provider: string; label: string; model?: string } | null }>('/keys').then(r => r.data),
+  add: (data: { provider: string; label: string; apiKey: string; model?: string; isDefault?: boolean }) => api.post('/keys', data).then(r => r.data),
+  remove: (id: string) => api.delete(`/keys/${id}`),
+  setDefault: (id: string) => api.put(`/keys/${id}/default`).then(r => r.data),
+  stats: () => api.get<{ totalUsers: number; stats: Array<{ provider: string; name: string; userCount: number }> }>('/keys/stats').then(r => r.data),
+  migrateLegacy: () => api.post<{ migrated: boolean; reason?: string }>('/keys/migrate-legacy').then(r => r.data),
+};
+
+export const authAPI = {
+  login: (email: string, password: string) =>
+    api.post<{ token: string; user: any }>('/auth/login', { email, password }).then((r) => r.data),
+  register: (name: string, email: string, password: string) =>
+    api.post<{ token: string; user: any }>('/auth/register', { name, email, password }).then((r) => r.data),
+  me: () => api.get<any>('/auth/me').then((r) => r.data),
+  updateDashscopeKey: (dashscopeKey: string) =>
+    api.put<any>('/auth/dashscope-key', { dashscopeKey }).then((r) => r.data),
+  createInviteToken: () => api.post<any>('/auth/invite-tokens').then((r) => r.data),
+  listInviteTokens: () => api.get<any[]>('/auth/invite-tokens').then((r) => r.data),
+};
